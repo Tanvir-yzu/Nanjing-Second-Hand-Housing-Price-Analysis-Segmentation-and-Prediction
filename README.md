@@ -22,7 +22,7 @@ classproject/
 ├── app.py                      # Gradio web app (price estimate, market data, model accuracy)
 ├── ershoufang-origin-utf8.csv  # Dataset: Nanjing second-hand housing listings (Chinese column names)
 ├── requirements.txt            # Pinned Python dependencies
-├── images/                     # Charts used in this README (exported from the notebook)
+├── images/                     # README images: notebook charts and app screenshots
 └── .gitignore
 ```
 
@@ -124,6 +124,42 @@ Follows a single test-set house through the whole pipeline:
 | **Price estimate** | Fill in a guided form (location → size & layout → building & condition) and get an estimated price, a likely range and a comparison of all three models. **Load sample listing** picks a real test-set home so you can see the estimate next to the actual price. **Random home** generates a made-up home. |
 | **Market data** | Filter by district, area and price. Shows summary statistics, charts and a table of listings. |
 | **Model accuracy** | Score cards for each model in plain language ("typical error", "within 10% of actual"), plus actual-vs-predicted and feature-importance charts. |
+
+### Price estimate
+
+A guided three-step form on the left, and the estimate on the right. In this example a real listing was loaded with **Load sample listing**: the model estimated **¥2.87M** against an actual listed price of **¥3.06M** (−6.3%). The black line on each bar marks the actual price.
+
+![Price estimate tab: guided form and estimate with model comparison](images/app_price_estimate.png)
+
+<details>
+<summary>Close-up of the result card</summary>
+
+<p align="center"><img src="images/app_result_card.png" alt="Result card: estimated price, likely range, actual price and per-model estimates" width="620"></p>
+
+The card shows:
+- the estimated price in ¥M and 万元, plus the price per m²
+- the likely range (estimate ± the model's typical error)
+- for sample listings, the actual price and a colored error badge: green under 5%, amber 5–15%, red over 15%
+- each model's estimate as a colored bar
+
+</details>
+
+### Market data
+
+Filter by district, floor area and price. The summary tiles, both charts and the listings table update right away.
+
+![Market data tab: filters, summary tiles, charts and listings table](images/app_market_data.png)
+
+### Model accuracy
+
+Plain-language score cards for each model, plus charts for the model you select.
+
+![Model accuracy tab: score cards, actual vs. estimated scatter and feature importance](images/app_model_accuracy.png)
+
+**Design notes**
+- Neutral slate and navy interface with the Inter font. It follows the system light/dark setting.
+- Each model keeps one color everywhere: amber for Decision Tree, blue for Random Forest, green for Gradient Boosting. The colors were checked for color-blind separation in light and dark mode, and model names are always shown next to them.
+- Every input has a short hint, and rarely used fields are grouped under **Advanced details**.
 
 > After changing or retraining the models in the notebook, re-run its last cell to update `model_artifacts.joblib` before starting the app.
 
