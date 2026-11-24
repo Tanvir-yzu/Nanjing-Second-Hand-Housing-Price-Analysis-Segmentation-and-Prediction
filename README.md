@@ -10,6 +10,8 @@ Machine-learning analysis of **20,432 second-hand home listings in Nanjing**. Th
 
 *Scores are on a held-out test set of 4,079 listings that the models never saw during training.*
 
+![Model comparison: feature importance, actual vs. predicted, R² by model](images/model_comparison.png)
+
 ---
 
 ## Project structure
@@ -20,6 +22,7 @@ classproject/
 ├── app.py                      # Gradio web app (price estimate, market data, model accuracy)
 ├── ershoufang-origin-utf8.csv  # Dataset: Nanjing second-hand housing listings (Chinese column names)
 ├── requirements.txt            # Pinned Python dependencies
+├── images/                     # Charts used in this README (exported from the notebook)
 └── .gitignore
 ```
 
@@ -59,16 +62,45 @@ myenv\Scripts\python app.py
 - Translates categories to English (district, decoration, building type, elevator, and so on).
 - Removes 28 rows with missing core values (mostly garages) and 11 extreme outliers, leaving **20,393 listings**.
 
+![Data funnel: rows remaining after each cleaning step and the train/test split](images/data_funnel.png)
+
 ### 2. Exploratory analysis
 Listings per district, price per m² by district, and price vs. floor area.
+
+![Listings by district, unit price by district, total price vs. floor area](images/eda_overview.png)
+
+- **Jiangning** has the most listings (about 5,400), more than any other district.
+- **Jianye** and **Gulou** are the most expensive per m² (median about 36–39k RMB/m²). **Pukou** is the cheapest (about 23k).
+- Total price rises with floor area, but the spread widens a lot for large homes.
 
 ### 3. Market segmentation (K-Means)
 Standardises total price, unit price and area, chooses **K = 5** with the elbow method, and profiles each segment.
 
+<p align="center"><img src="images/kmeans_elbow.png" alt="Elbow method: SSE vs. number of clusters" width="560"></p>
+
+![K-Means clusters plotted by unit price, total price and floor area](images/kmeans_clusters.png)
+
+| Cluster | Listings | Avg price | Avg price / m² | Avg area | Segment |
+|---|---|---|---|---|---|
+| 1 | 8,003 | ¥1.96M | 30,785 | 63 m² | Small affordable flats |
+| 2 | 6,537 | ¥2.49M | 24,322 | 103 m² | Mid-size, lower-cost areas |
+| 0 | 3,733 | ¥4.44M | 32,313 | 141 m² | Large family homes |
+| 3 | 1,530 | ¥4.94M | 55,305 | 91 m² | Prime-location flats |
+| 4 | 590 | ¥9.52M | 42,412 | 231 m² | Luxury / villas |
+
 ### 4. Price prediction
 - **Features:** area, layout, floors, floor level, orientation, years since last sale, plus one-hot encoded district, decoration, building type, elevator, tenure and structure.
 - **Compound price encoding:** each residential compound's average price per m², smoothed toward the city mean and computed **only from training data**, so no test information leaks into the features.
-- **80/20 train/test split** (`random_state=42`). The three models are compared on R², MAE and RMSE, with feature-importance and actual-vs-predicted charts.
+- **80/20 train/test split** (`random_state=42`). The three models are compared on R², MAE and RMSE, with feature-importance and actual-vs-predicted charts (see the chart at the top).
+- The most important feature by far is `compound_baseline_total` (compound price per m² × floor area). Location is the main driver of price.
+
+**How the models learn.** Dashed lines are error on training houses and solid lines are error on new houses:
+
+![Learning curves: training vs. test error for each model](images/learning_curves.png)
+
+**The first two levels of the Decision Tree:**
+
+![Top two levels of the decision tree](images/decision_tree.png)
 
 ### 5. Walkthrough: from raw data to prediction
 Follows a single test-set house through the whole pipeline:
@@ -78,6 +110,8 @@ Follows a single test-set house through the whole pipeline:
 - the house's path through the Decision Tree's yes/no questions
 - Gradient Boosting building the prediction tree by tree, and Random Forest's 300 tree "votes"
 - `predict_house()` to estimate the price of any home you describe
+
+![Gradient Boosting refines its estimate tree by tree; Random Forest averages 300 tree votes](images/ensemble_prediction.png)
 
 ---
 
