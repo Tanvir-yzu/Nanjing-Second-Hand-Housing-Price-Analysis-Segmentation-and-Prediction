@@ -1,0 +1,27 @@
+# Virtual environment
+myenv/
+venv/
+.venv/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Generated files (re-create by running classproject.ipynb)
+model_artifacts.joblib
+classproject.html
+
+# Gradio
+.gradio/
+flagged/
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
